@@ -12,16 +12,16 @@ var Engine = Matter.Engine,
 // create an engine
 var engine = Engine.create();
 
+engine.world.gravity = {scale: 0, x: 0, y:0};
 
 // create two boxes and a ground
 var boxA = Bodies.rectangle(0, 100, 80, 80);
-var boxB = Bodies.rectangle(100, 100, 80, 80);
 
-var bodies = [boxA, boxB]
+//console.log(boxA);
 
 
 // add all of the bodies to the world
-World.add(engine.world, [boxA, boxB]);
+World.add(engine.world, [boxA]);
 
 function handler (req, res) {
   fs.readFile(__dirname + '/client.html',
@@ -39,13 +39,16 @@ function handler (req, res) {
 
 io.on('connection', function (socket) {
   setInterval(function() {
-    socket.emit('update', { bodies: bodies });
-  },1000);
+    socket.emit('update', boxA.position);
+  },20);
 
+  socket.on('action', function (dir) {
+    Matter.Body.applyForce(boxA, {x:0,y:0}, dir)
+  })
 });
 
 setInterval(function() {
-  Matter.Engine.update(engine, 1000);
-},1000);
+  Engine.update(engine, 20);
+},20);
 
 app.listen(80);
