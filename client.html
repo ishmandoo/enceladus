@@ -1,0 +1,20 @@
+<script src="/socket.io/socket.io.js"></script>
+<canvas id="myCanvas" width="1000px" height="1000px">
+
+</canvas>
+<script>
+  var canvas = document.getElementById("myCanvas");
+  var ctx = canvas.getContext("2d");
+  var socket = io('http://localhost');
+  socket.on('update', function (data) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    data.forEach(function(rect) {
+      ctx.beginPath();
+      ctx.rect(data.pos.x/1000, data.pos.y/1000, 50, 50);
+      ctx.fillStyle = "#FF0000";
+      ctx.fill();
+      ctx.closePath();
+      console.log(data);
+    });
+  });
+</script>

@@ -1,0 +1,24 @@
+{
+  "name": "enceladus",
+  "version": "1.0.0",
+  "description": "",
+  "main": "physics.js",
+  "dependencies": {
+    "matter-js": "^0.12.0",
+    "socket.io": "^1.7.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ishmandoo/enceladus.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ishmandoo/enceladus/issues"
+  },
+  "homepage": "https://github.com/ishmandoo/enceladus#readme"
+}
