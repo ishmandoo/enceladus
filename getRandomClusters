@@ -1,0 +1,26 @@
+function getRandomClusters(xBds,yBds,numRand){
+
+	/*
+	xBds is a pair of the form {lower bound, upper bound} in pixels,
+	for where you want the randomly generated clusters to be placed.
+	Same with yBds. numRand is the number of clusters you want.
+	randList is returned, in the form of a list of pairs [[x1,y1],[x2,y2],...].
+	*/
+
+	var xLB=xBds[0];
+	var xUB=xBds[1];
+	var xRange=xUB-xLB;
+	var yLB=yBds[0];
+	var yUB=yBds[1];
+	var yRange=yUB-yLB;
+	var randList=[];
+	for(i=0;i<numRand;i++){
+	
+		var xpos=xLB+Math.floor(Math.random()*xRange);
+		var ypos=yLB+Math.floor(Math.random()*yRange);
+		console.log(xpos+", "+ypos);
+		randList.push([xpos,ypos]);
+	
+	}
+	return(randList);
+}
