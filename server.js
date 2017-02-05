@@ -111,20 +111,24 @@ io.on('connection', function (socket) {
       var newCluster = createCompositeFromArray(oldCluster.clusterArray, oldCluster.bounds.min, oldCluster.players)
       oldCluster.players.forEach(function(player){
         player.cluster = newCluster
-        var testPos = addPos(player.pos, searchList[(2*player.dir)%8])
-        if (blockAt(player.cluster, testPos)){
-          player.pos = testPos
-        } else {
-          for (i=1; i<8; i++){
-            var searchIndex = (i+2*player.dir)%8;
-            var testPos = addPos(player.pos, searchList[searchIndex])
-            if (blockAt(player.cluster, testPos)){
-              player.pos = testPos
-              player.dir = (Math.floor(searchIndex/2) + 1)%4
-              break;
+
+        if player.cluster.clusterArray[player.pos.x][player.pos.y] <= 0 {
+          var testPos = addPos(player.pos, searchList[(2*player.dir)%8])
+          if (blockAt(player.cluster, testPos)){
+            player.pos = testPos
+          } else {
+            for (i=1; i<8; i++){
+              var searchIndex = (i+2*player.dir)%8;
+              var testPos = addPos(player.pos, searchList[searchIndex])
+              if (blockAt(player.cluster, testPos)){
+                player.pos = testPos
+                player.dir = (Math.floor(searchIndex/2) + 1)%4
+                break;
+              }
             }
           }
         }
+
       })
       //player.cluster = newCluster
       World.remove(engine.world, [oldCluster]);
