@@ -123,8 +123,8 @@ function drawBackground(origin){
       origin.x  = origin.x % width;
       origin.y  = origin.y % height;
 
-      for(var i = -1 * width; i < canvas.width; i += width){
-        for(var j = -1 * height; j < canvas.height; j += height){
+      for(var i = -1 * width; i < canvas.width + width; i += width){
+        for(var j = -1 * height; j < canvas.height + height; j += height){
               ctx.drawImage(document.getElementById("backgroundstars"), origin.x + i, origin.y + j)
         }
       }
