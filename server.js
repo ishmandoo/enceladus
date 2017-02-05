@@ -99,6 +99,7 @@ io.on('connection', function (socket) {
     }, 200)
     player.cluster.clusterArray[player.pos.x][player.pos.y] -= 1;
     if (player.cluster.clusterArray[player.pos.x][player.pos.y] <= 0) {
+      player.cluster.clusterArray[player.pos.x][player.pos.y] = 0;
       var oldCluster = player.cluster
       var newCluster = createCompositeFromArray(oldCluster.clusterArray, oldCluster.bounds.min, oldCluster.players)
       player.cluster = newCluster
