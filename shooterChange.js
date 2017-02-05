@@ -24,6 +24,7 @@ function shooterChange(inCluster,curPos,curDir,clickDir){
 
 	curDir is the direction the "rocket" is pointing, {N,E,S,W}={[0,1],[1,0],[0,-1],[-1,0]}.
 
+	returns [newPos,newDir].
 	*/
 
 	var i=curPos[0];
@@ -162,14 +163,14 @@ function shooterChange(inCluster,curPos,curDir,clickDir){
 					}
 					else{
 						newPos=[i,j];
-						newDir=dirOrder[2];
-					}
+						newDir=dirOrder[2]; }
 				}	
 			
 				break;
 
 		}
 
+		return([newPos,newDir]);
 }
 
 function checkInClusterBounds(inCluster,a,b){
