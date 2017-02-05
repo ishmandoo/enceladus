@@ -33,6 +33,8 @@ function handler (req, res) {
 io.on('connection', function (socket) {
 
   socket.player = createPlayer();
+  socket.player.socket = socket;
+  console.log("a client connected");
 
   setInterval(function() {
     bodies = engine.world.bodies
@@ -50,9 +52,93 @@ io.on('connection', function (socket) {
       })
     })}, 20);
 
-  socket.on('action', function (dir) {
-    Matter.Body.applyForce(boxA, {x:0,y:0}, dir)
+  socket.on('move', function (rot) {
+/*
+    dirConversion=[
+      [0,1],
+      [1,0],
+      [0,-1],
+      [-1,0]
+    ]
+
+    dirConversionReverse function(declanDir){
+      switch(curDir){
+
+        case [0,1]:
+          return 0;
+        break;
+        case [1,0]:
+          return 1;
+        break;
+        case[0,-1]:
+          return 2;
+        break;
+        case[-1,0]:
+          return 3;
+        break;
+    }
+*/
+    player = socket.player
+    res = findNewPlayerPos(player.cluster, player.pos, player.dir, rot)
+    newPos = res.pos
+    newDir = res.dir
+    player.pos = newPos
+    player.dir = newDir
+
   })
+
+  socket.on('fire', function () {
+    dirConversion=[
+      {x:0,y:0.01},
+      {x:-0.01,y:0},
+      {x:0,y:-0.01},
+      {x:0.01,y:0}
+    ]
+
+    searchList = [
+      {x:0, y:1},
+      {x:-1, y:1},
+      {x:-1, y:0},
+      {x:-1, y:-1},
+      {x:0, y:-1},
+      {x:1, y:-1},
+      {x:1, y:0},
+      {x:1, y:1},
+    ]
+
+    var player = socket.player
+    var oldDir = player.dir
+    player.burn = true
+    setTimeout(function() {
+      player.burn = false
+    }, 200)
+    player.cluster.clusterArray[player.pos.x][player.pos.y] -= 1;
+    if (player.cluster.clusterArray[player.pos.x][player.pos.y] <= 0) {
+      var oldCluster = player.cluster
+      var newCluster = createCompositeFromArray(oldCluster.clusterArray, oldCluster.bounds.min, oldCluster.players)
+      player.cluster = newCluster
+      World.remove(engine.world, [oldCluster]);
+      World.add(engine.world, newCluster);
+
+      var testPos = addPos(player.pos, searchList[(2*player.dir)%8])
+      if (blockAt(player.cluster, testPos)){
+        player.pos = testPos
+      } else {
+        for (i=1; i<8; i++){
+          var searchIndex = (i+2*player.dir)%8;
+          var testPos = addPos(player.pos, searchList[searchIndex])
+          if (blockAt(player.cluster, testPos)){
+            player.pos = testPos
+            player.dir = Math.floor(searchIndex/2)
+            break;
+          }
+        }
+      }
+
+    }
+
+    Body.applyForce(player.cluster, player.cluster.position, dirConversion[oldDir]);
+  });
 });
 
 setInterval(function() {
@@ -62,7 +148,7 @@ setInterval(function() {
 function createPlayer(){
 
   var player = {pos:{x:0,y:0},dir:0, burn:0};
-  newCluster = createCompositeFromArray([[1,1],[1,1]], {x: 100, y:100}, [player]);
+  newCluster = createCompositeFromArray([[16,16],[16,16]], {x: 100, y:100}, [player]);
   player.cluster = newCluster;
   World.add(engine.world, newCluster); // Array?
 
@@ -106,7 +192,15 @@ function createCompositeFromArray(arr, pos, players){
     return compound;
 }
 
+function killPlayer(player){
+  console.log("player killed")
+  var socket = player.socket;
+  player = createPlayer();
+  socket.player = player;
 
+  return player
+
+}
 
 function combineComposites(clusterA, Aorigin, clusterB, Borigin) {
     /*
@@ -152,7 +246,7 @@ function combineComposites(clusterA, Aorigin, clusterB, Borigin) {
     for(i=0;i<A.width;i++){
         for(j=0;j<A.height;j++){
             if(A.clusterArray[i][j]){
-                newClusterArray[i+A.originoffsetx][j+A.originoffsety]=1;
+                newClusterArray[i+A.originoffsetx][j+A.originoffsety]=A.clusterArray[i][j];
             }
         }
     }
@@ -162,7 +256,7 @@ function combineComposites(clusterA, Aorigin, clusterB, Borigin) {
     for(i=0;i<B.width;i++){
         for(j=0;j<B.height;j++){
             if(B.clusterArray[i][j]){
-                newClusterArray[i+B.originoffsetx][j+B.originoffsety]=1;
+                newClusterArray[i+B.originoffsetx][j+B.originoffsety]=B.clusterArray[i][j];
             }
         }
     }
@@ -197,6 +291,56 @@ function getRandomClusters(xBds,yBds,numRand){
 	return(randList);
 }
 
+function findNewPlayerPos(cluster, pos, dir, rot){
+  dirChanges = [-1, 0, 1]
+
+  cw = [
+    [{x:1,y:-1}, {x:1,y:0}, {x:0,y:0}],
+    [{x:1,y:1}, {x:0,y:1}, {x:0,y:0}],
+    [{x:-1,y:1}, {x:-1,y:0}, {x:0,y:0}],
+    [{x:-1,y:-1}, {x:0,y:-1}, {x:0,y:0}],
+  ]
+
+  ccw = [
+    [{x:-1,y:-1}, {x:-1,y:0}, {x:0,y:0}],
+    [{x:1,y:-1}, {x:0,y:-1}, {x:0,y:0}],
+    [{x:1,y:1}, {x:1,y:0}, {x:0,y:0}],
+    [{x:-1,y:1}, {x:0,y:1}, {x:0,y:0}],
+  ]
+
+  if (rot == 1){
+    table = cw
+  } else {
+    table = ccw
+  }
+
+  for(i = 0; i<=2; i++){
+    if (blockAt(cluster, addPos(table[dir][i], pos))) {
+      newPos = addPos(table[dir][i], pos);
+      newDir = (4 + dir + dirChanges[i] * rot ) % 4;
+      return {dir: newDir, pos: newPos};
+    }
+  }
+
+
+}
+
+function blockAt(cluster, loc){
+  console.log(loc)
+  if ((loc.x < 0) || (loc.y < 0) || (loc.x >= cluster.clusterArray.length) || (loc.y >= cluster.clusterArray[0].length)) {
+    return false;
+  }
+  if (cluster.clusterArray[loc.x][loc.y] == 0){
+    return false;
+  } else {
+    return true;
+  }
+}
+
+function addPos(pos1, pos2){
+  return {x:pos1.x+pos2.x,y:pos1.y+pos2.y}
+}
+
 var events;
 function collisionCallback(event){
     pair = event.source.broadphase.pairsList[0]
@@ -214,19 +358,35 @@ function collisionCallback(event){
     console.log(j)
     newClusterArray = combineComposites(obj1, [i,j], obj2, [0,0])
 
-    newCluster = createCompositeFromArray(newClusterArray, {x: newX, y:newY})
-
+    newCluster = createCompositeFromArray(newClusterArray, {x: newX, y:newY}, [])
+    dirConversion=[
+      {x:0,y:-1},
+      {x:1,y:0},
+      {x:0,y:1},
+      {x:-1,y:0}
+    ]
     newPlayerArray = []
-    obj1.players.forEach(function(player){
+    obj2.players.forEach(function(player){
+      if(blockAt(newCluster, addPos(dirConversion[player.dir], player.pos))){
+        player = killPlayer(player);
+
+      }else{
       newPlayerArray.push(player)
       player.cluster = newCluster;
+    }
+
+
     });
 
-    obj2.players.forEach(function(player){
+    obj1.players.forEach(function(player){
       player.pos.x = player.pos.x + i;
       player.pos.y = player.pos.y + j;
+      if(blockAt(newCluster, addPos(dirConversion[player.dir], player.pos))){
+        player = killPlayer(player);
+      }else{
       player.cluster = newCluster;
       newPlayerArray.push(player);
+    }
     });
     newCluster.players = newPlayerArray;
     Body.setAngle(newCluster, 0);
@@ -237,8 +397,8 @@ function collisionCallback(event){
 
 Events.on(engine, "collisionStart", collisionCallback);
 
-objA = createCompositeFromArray([[1,1,0],[1,0,1]], {x: 120, y:100}, [{pos:{x:0,y:0},dir:0, burn:0}])
-objB = createCompositeFromArray([[1,0],[0,1],[0,1]], {x: 400, y:100}, [])
+//objA = createCompositeFromArray([[1,1,0],[1,0,1]], {x: 120, y:100}, [{pos:{x:0,y:0},dir:0, burn:0}])
+objB = createCompositeFromArray([[16,0],[0,8],[0,8]], {x: 400, y:100}, [])
 
 
 Body.setVelocity(objB, {
@@ -247,6 +407,6 @@ Body.setVelocity(objB, {
 });
 
 
-World.add(engine.world, [objA, objB]);
+World.add(engine.world, [objB]);
 
 app.listen(80);

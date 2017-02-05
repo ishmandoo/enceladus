@@ -16,7 +16,7 @@
 <img id="box4" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box4.png"></img>
 <img id="box3" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box3.png"></img>
 <img id="box2" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box2.png"></img>
-<img id="box1" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box16.png"></img>
+<img id="box1" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box1.png"></img>
 
 <img id="playerup1" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/PlayerSprites/playerup1.png"></img>
 <img id="playerdown1" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/PlayerSprites/playerdown1.png"></img>
@@ -27,14 +27,17 @@
 <img id="playerleftburn" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/PlayerSprites/playerleftPlaceholderBurn.png"></img>
 <img id="playerupburn" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/PlayerSprites/playerupPlaceholderBurn.png"></img>
 <img id="playerdownburn" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/PlayerSprites/playerdownPlaceholderBurn.png"></img>
+<style>
+  * { padding: 0; margin: 0; }
+  canvas { background: #000000; display: block; margin: 0 auto; }
+</style>
 
-
-<canvas id="myCanvas" width="300 px" height="300 px"></canvas>
+<canvas id="myCanvas" width="300 px" height="300 px" bac></canvas>
 
 <script>
   var canvas = document.getElementById("myCanvas");
   var ctx = canvas.getContext("2d");
-  var socket = io('http://localhost');
+  var socket = io.connect();
   socket.on('update', function (data) {
     draw(data);
   });
@@ -48,17 +51,15 @@
 
       e = e || window.event;
 
-      if (e.keyCode == '38') {
-          socket.emit('action', {x:0, y:-1});
-      }
-      else if (e.keyCode == '40') {
-          socket.emit('action', {x:0, y:1});
-      }
-      else if (e.keyCode == '37') {
-          socket.emit('action', {x:-1, y:0});
+      if (e.keyCode == '37') {
+          socket.emit('move', -1);
       }
       else if (e.keyCode == '39') {
-          socket.emit('action', {x:1, y:0});
+          socket.emit('move', 1);
+      }
+      else if (e.keyCode == '32') {
+          socket.emit('fire');
+
       }
 
   }
@@ -88,8 +89,8 @@ function drawCluster(boxes,pos){
 }
 
 function drawPlayer(player){
-  console.log("drew player")
-  if(player.burn == 0){
+
+  if(!player.burn){
     ctx.drawImage(document.getElementById("player" + names[player.dir] + "1"), player.pos.x, player.pos.y)
   } else{
     ctx.drawImage(document.getElementById("player" + names[player.dir] + "burn"), player.pos.x , player.pos.y)
