@@ -112,7 +112,7 @@ io.on('connection', function (socket) {
       oldCluster.players.forEach(function(player){
         player.cluster = newCluster
 
-        if player.cluster.clusterArray[player.pos.x][player.pos.y] <= 0 {
+        if (player.cluster.clusterArray[player.pos.x][player.pos.y] <= 0) {
           var testPos = addPos(player.pos, searchList[(2*player.dir)%8])
           if (blockAt(player.cluster, testPos)){
             player.pos = testPos
