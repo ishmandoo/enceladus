@@ -1,21 +1,45 @@
 <script src="/socket.io/socket.io.js"></script>
-<canvas id="myCanvas" width="300 px" height="300 px">
 
-</canvas>
+
+<img id="box16" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box16.png"></img>
+<img id="box15" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box15.png"></img>
+<img id="box14" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box14.png"></img>
+<img id="box13" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box13.png"></img>
+<img id="box12" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box12.png"></img>
+<img id="box11" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box11.png"></img>
+<img id="box10" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box10.png"></img>
+<img id="box9" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box9.png"></img>
+<img id="box8" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box8.png"></img>
+<img id="box7" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box7.png"></img>
+<img id="box6" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box6.png"></img>
+<img id="box5" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box5.png"></img>
+<img id="box4" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box4.png"></img>
+<img id="box3" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box3.png"></img>
+<img id="box2" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box2.png"></img>
+<img id="box1" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box16.png"></img>
+
+<img id="playerup1" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/PlayerSprites/playerup1.png"></img>
+<img id="playerdown1" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/PlayerSprites/playerdown1.png"></img>
+<img id="playerleft1" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/PlayerSprites/playerleft1.png"></img>
+<img id="playerright1" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/PlayerSprites/playerright1.png"></img>
+
+<img id="playerrightburn" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/PlayerSprites/playerrightPlaceholderBurn.png"></img>
+<img id="playerleftburn" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/PlayerSprites/playerleftPlaceholderBurn.png"></img>
+<img id="playerupburn" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/PlayerSprites/playerupPlaceholderBurn.png"></img>
+<img id="playerdownburn" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/PlayerSprites/playerdownPlaceholderBurn.png"></img>
+
+
+<canvas id="myCanvas" width="300 px" height="300 px"></canvas>
+
 <script>
   var canvas = document.getElementById("myCanvas");
   var ctx = canvas.getContext("2d");
   var socket = io('http://localhost');
-  socket.on('update', function (rect) {
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    ctx.beginPath();
-    ctx.rect(rect.x/1000, rect.y/1000, 50, 50);
-    ctx.fillStyle = "#FF0000";
-    ctx.fill();
-    ctx.closePath();
+  socket.on('update', function (data) {
+    draw(data);
   });
+
+  var boxWidth = 18;
 
 
   document.onkeydown = checkKey;
@@ -38,4 +62,61 @@
       }
 
   }
+
+offsets = [
+  {x: 0,y:-2},
+  {x: 1,y: 0},
+  {x: 0,y: 1},
+  {x:-2,y: 0}
+]
+names = [
+  'up',
+  'right',
+  'down',
+  'left'
+]
+function drawCluster(boxes,pos){
+  iMax = boxes.length;
+  jMax = boxes[0].length;
+  for(i=0 ; i<iMax ; i++){
+    for(j=0 ; j<jMax ; j++){
+      if(boxes[i][j] != 0){
+        ctx.drawImage(document.getElementById('box' + boxes[i][j]), pos.x + i*boxWidth, pos.y + j*boxWidth);
+      }
+    }
+  }
+}
+
+function drawPlayer(player){
+  console.log("drew player")
+  if(player.burn == 0){
+    ctx.drawImage(document.getElementById("player" + names[player.dir] + "1"), player.pos.x, player.pos.y)
+  } else{
+    ctx.drawImage(document.getElementById("player" + names[player.dir] + "burn"), player.pos.x , player.pos.y)
+  }
+}
+
+
+
+function draw(data) {
+  clusters = data.clusters
+  players = data.players
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  /*
+  clusterArray = [
+    {boxes: [[16,0,0],[15,0,0],[14,13,12]], pos:{x:100, y:100}, players: [{pos:{x:0,y:0},dir:0, burn:0}]},
+    {boxes: [[11,0,0],[10,0,0],[9,8,7]], pos:{x:200, y:100}, players: [{pos:{x:0,y:0},dir:3, burn:0}]},
+    {boxes: [[6,0,0],[5,0,0],[4,3,2]], pos:{x:100, y:200}, players: [{pos:{x:0,y:0},dir:2, burn:1}]},
+    {boxes: [[1,0,0],[2,0,0],[3,4,5]], pos:{x:200, y:200}, players: [{pos:{x:0,y:0},dir:0, burn:1}]}
+  ];
+  */
+  clusters.forEach(function (cluster){
+    drawCluster(cluster.boxes,cluster.pos);
+  });
+  players.forEach(function (player){
+    drawPlayer(player);
+  });
+
+
+}
 </script>
