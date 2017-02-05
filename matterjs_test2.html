@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Gamedev Canvas Workshop</title>
+    <style>
+    	* { padding: 0; margin: 0; }
+    	canvas { background: #eee; display: block; margin: 0 auto; }
+    </style>
+</head>
+<body>
+
+
+    <script src="node_modules/matter-js/build/matter.js"></script>
+
+    <script>
+	// JavaScript code goes here
+	/*
+	var canvas = document.getElementById("myCanvas");
+	var ctx = canvas.getContext("2d");
+    */
+// module aliases
+var Engine = Matter.Engine,
+Render = Matter.Render,
+World = Matter.World,
+Bodies = Matter.Bodies,
+Common = Matter.Common,
+Events = Matter.Events,
+Constraint = Matter.Constraint,
+Vector = Matter.Vector,
+Body = Matter.Body;
+
+boxWidth = 80;
+
+function createCompositeFromArray(arr, pos){
+    bodies = []
+    iMax = arr.length
+    jMax = arr[0].length
+    for(i = 0; i < iMax; i++){
+        for(j=0; j < jMax; j++){
+            if (arr[i][j] > 0) {
+                bodies.push(Bodies.rectangle((i+0.5) * boxWidth + pos.x, (j+0.5) * boxWidth + pos.y, boxWidth, boxWidth))
+            }
+        }
+    }
+
+    var compound = Body.create({
+        parts: bodies,
+    });
+
+    compound.clusterArray = arr;
+    return compound;
+}
+
+function combineComposites(clusterA, Aorigin, clusterB, Borigin) {
+
+    /*
+
+    Aorigin and B origin are "absolute" indices. If you want them to be relative to each
+    other, then make Aorigin = [0,0] and Borigin with respect to that.
+
+    Corigin is "absolute" as well.  
+
+    */
+
+    var A = new Object();
+    A.originx=Aorigin[0];
+    A.originy=Aorigin[1];
+    A.width=clusterA.length;
+    A.height=clusterA[0].length;
+
+    var B = new Object();
+    B.originx=Borigin[0];
+    B.originy=Borigin[1];
+    B.width=clusterB.length;
+    B.height=clusterB[0].length;
+
+
+    //The newly created cluster
+    var C = new Object();
+    C.originx=Math.min(A.originx,B.originx);
+    C.originy=Math.min(A.originy,B.originy);
+    C.width=Math.max(A.originx+A.width,B.originx+B.width)-C.originx;
+    C.height=Math.max(A.originy+A.height,B.originy+B.height)-C.originy;
+
+    console.log("New origin is at "+C.originx+", "+C.originy);
+
+    A.originoffsetx=A.originx-C.originx;
+    A.originoffsety=A.originy-C.originy;
+    B.originoffsetx=B.originx-C.originx;
+    B.originoffsety=B.originy-C.originy;
+
+
+
+    //Create empty final array filled with 0's
+    var newCluster = [];
+    for(i=0;i<C.width;i++){
+        newCluster.push([]);    
+        for(j=0;j<C.height;j++){
+            newCluster[i].push(0);
+        }
+    }
+
+    console.log("New array is "+C.width+" by "+C.height);
+
+    console.log("Filling new array with cluster A blocks:");
+    //Add A clusters to final array
+    //console.log("***********************************************");
+    for(i=0;i<A.width;i++){
+        for(j=0;j<A.height;j++){
+            if(clusterA[i][j]){
+                newCluster[i+A.originoffsetx][j+A.originoffsety]=1;
+            }
+        }
+    }
+
+    
+
+    console.log("Filling new array with cluster B blocks:");
+    //Add B clusters to final array
+    for(i=0;i<B.width;i++){
+        for(j=0;j<B.height;j++){
+            if(clusterB[i][j]){
+                newCluster[i+B.originoffsetx][j+B.originoffsety]=1;
+            }
+        }
+    }
+
+    //newCluster.map(function(yrow){yrow.reverse()})
+    return newCluster;
+
+}
+
+
+var events;
+function collisionCallback(event){
+    pair = event.source.broadphase.pairsList[0]
+
+    obj1 = pair[0];
+    obj2 = pair[1];
+
+
+
+    M = obj1.mass + obj2.mass;
+    invM = 1/M;
+    jointvelocity = {x: (obj1.velocity.x * obj1.mass + obj2.velocity.x * obj2.mass)/ M,
+       y: (obj1.velocity.y * obj1.mass + obj2.velocity.y * obj2.mass)/ M};
+
+    i = Math.round((obj1.bounds.min.x - obj2.bounds.min.x)/ boxWidth)
+    j = Math.round((obj1.bounds.min.y - obj2.bounds.min.y)/ boxWidth)
+    newX = Math.min(obj1.bounds.min.x,obj2.bounds.min.x)
+    newY = Math.min(obj1.bounds.min.y,obj2.bounds.min.y)
+    console.log(i)
+    console.log(j)
+
+
+    newClusterArray = combineComposites(obj1.clusterArray, [i,j], obj2.clusterArray, [0,0])
+    console.log(newClusterArray)
+    newCluster = createCompositeFromArray(newClusterArray, {x: newX, y:newY})
+
+    Body.setAngle(newCluster, 0);
+
+    Body.setVelocity(newCluster, jointvelocity);
+
+    World.remove(engine.world, [obj1,obj2]);
+    World.add(engine.world, newCluster);
+
+
+}
+
+// create an engine
+
+var engine = Engine.create();
+engine.world.gravity = {scale: 0, x: 0, y:0};
+//Events.on(engine, "collisionEnd", collisionCallback);
+Events.on(engine, "collisionStart", collisionCallback);
+// create a renderer
+var render = Render.create({
+    element: document.body,
+    engine: engine
+});
+
+
+// create two boxes and a ground
+objA = createCompositeFromArray([[1,1,0],[1,0,1]], {x: 120, y:100})
+objB = createCompositeFromArray([[1,0],[0,1],[0,1]], {x: 400, y:100})
+
+
+
+    Body.setVelocity(objB, { 
+        x: -5, 
+        y: 0
+    });
+
+//World.add(engine.world, [ ground,circy, compoundBodyB]);
+World.add(engine.world, [objA, objB]);
+//World.add(engine.world, boxes);
+
+
+
+
+
+
+// run the engine
+Engine.run(engine);
+
+// run the renderer
+Render.run(render);
+
+
+
+
+
+
+</script>
+
+</body>
+</html>
