@@ -63,31 +63,6 @@ io.on('connection', function (socket) {
     })}, 20);
 
   socket.on('move', function (rot) {
-/*
-    dirConversion=[
-      [0,1],
-      [1,0],
-      [0,-1],
-      [-1,0]
-    ]
-
-    dirConversionReverse function(declanDir){
-      switch(curDir){
-
-        case [0,1]:
-          return 0;
-        break;
-        case [1,0]:
-          return 1;
-        break;
-        case[0,-1]:
-          return 2;
-        break;
-        case[-1,0]:
-          return 3;
-        break;
-    }
-*/
     player = socket.player
     res = findNewPlayerPos(player.cluster, player.pos, player.dir, rot)
     newPos = res.pos
@@ -166,6 +141,17 @@ function createPlayer(){
   return player
 }
 
+
+function killPlayer(player){
+  console.log("player killed")
+  var socket = player.socket;
+  var player = createPlayer();
+  socket.player = player;
+
+  return player
+
+}
+
 function getPlayerCoordinates(player){
   offsets = [
     {x: 0,y:-2 },
@@ -203,15 +189,6 @@ function createCompositeFromArray(arr, pos, players){
     return compound;
 }
 
-function killPlayer(player){
-  console.log("player killed")
-  var socket = player.socket;
-  var player = createPlayer();
-  socket.player = player;
-
-  return player
-
-}
 
 function combineComposites(clusterA, Aorigin, clusterB, Borigin) {
     /*
@@ -386,7 +363,7 @@ function collisionCallback(event){
            console.log(player.pos)
       if(blockAt(newCluster, addPos(dirConversion[player.dir], player.pos))){
 
-        //player = killPlayer(player);
+        player = killPlayer(player);
 
       } else {
         newPlayerArray.push(player)
@@ -405,7 +382,7 @@ function collisionCallback(event){
 
           console.log(player.pos)
       if(blockAt(newCluster, addPos(dirConversion[player.dir], player.pos))){
-        //player = killPlayer(player);
+        player = killPlayer(player);
       }else{
       player.cluster = newCluster;
       newPlayerArray.push(player);
