@@ -20,6 +20,13 @@
 	var ctx = canvas.getContext("2d");
     */
 // module aliases
+
+
+
+
+userObj = null;
+
+
 var Engine = Matter.Engine,
 Render = Matter.Render,
 World = Matter.World,
@@ -31,6 +38,33 @@ Vector = Matter.Vector,
 Body = Matter.Body;
 
 boxWidth = 80;
+
+function getRandomClusters(xBds,yBds,numRand){
+
+    /*
+    xBds is a pair of the form {lower bound, upper bound} in pixels,
+    for where you want the randomly generated clusters to be placed.
+    Same with yBds. numRand is the number of clusters you want.
+    randList is returned, in the form of a list of pairs [[x1,y1],[x2,y2],...].
+    */
+
+    var xLB=xBds[0];
+    var xUB=xBds[1];
+    var xRange=xUB-xLB;
+    var yLB=yBds[0];
+    var yUB=yBds[1];
+    var yRange=yUB-yLB;
+    var randList=[];
+    for(i=0;i<numRand;i++){
+    
+        var xpos=xLB+Math.floor(Math.random()*xRange);
+        var ypos=yLB+Math.floor(Math.random()*yRange);
+        console.log(xpos+", "+ypos);
+        randList.push([xpos,ypos]);
+    
+    }
+    return(randList);
+}
 
 function createCompositeFromArray(arr, pos){
     bodies = []
@@ -132,7 +166,9 @@ function combineComposites(clusterA, Aorigin, clusterB, Borigin) {
 }
 
 
-var events;
+
+
+
 function collisionCallback(event){
     pair = event.source.broadphase.pairsList[0]
 
@@ -162,6 +198,10 @@ function collisionCallback(event){
 
     Body.setVelocity(newCluster, jointvelocity);
 
+    if(obj1 == userObj || obj2 == userObj){
+        userObj = newCluster;
+    }
+
     World.remove(engine.world, [obj1,obj2]);
     World.add(engine.world, newCluster);
 
@@ -182,20 +222,56 @@ var render = Render.create({
 
 
 // create two boxes and a ground
-objA = createCompositeFromArray([[1,1,0],[1,0,1]], {x: 120, y:100})
-objB = createCompositeFromArray([[1,0],[0,1],[0,1]], {x: 400, y:100})
+//objA = createCompositeFromArray([[1,1,0],[1,0,1]], {x: 120, y:100})
+//objB = createCompositeFromArray([[1,0],[0,1],[0,1]], {x: 400, y:100})
+
+objA = createCompositeFromArray([[1]], {x: 120, y:100})
 
 
 
+/*
     Body.setVelocity(objB, { 
         x: -5, 
         y: 0
     });
+    */
 
+
+userObj = objA
 //World.add(engine.world, [ ground,circy, compoundBodyB]);
-World.add(engine.world, [objA, objB]);
+//World.add(engine.world, [objA, objB]);
+World.add(engine.world, userObj);
+
+clusters = getRandomClusters([0,800], [0,800], 10);
+
+
+bods = clusters.map(function(xy){  return createCompositeFromArray([[1]], {x: xy[0], y:xy[1]})   })
+console.log(clusters)
+World.add(engine.world, bods);
+
 //World.add(engine.world, boxes);
 
+
+
+document.onkeydown = checkKey;
+  function checkKey(e) {
+      e = e || window.event;
+      if (e.keyCode == '38') {
+          dir =  {x:0, y:-1};
+      }
+      else if (e.keyCode == '40') {
+          dir = {x:0, y:1};
+      }
+      else if (e.keyCode == '37') {
+          dir =  {x:-1, y:0};
+      }
+      else if (e.keyCode == '39') {
+         dir =  {x:1, y:0};
+      }
+      Matter.Body.applyForce(userObj, userObj.position, Vector.mult(dir,0.4));
+      //Matter.Body.setAngularVelocity(userObj, 0);
+      //Matter.Body.setAngle(userObj, 0);
+  }
 
 
 
