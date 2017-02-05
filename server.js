@@ -97,6 +97,13 @@ io.on('connection', function (socket) {
     setTimeout(function() {
       player.burn = false
     }, 200)
+
+    if(player.pos.x >= player.cluster.clusterArray.length || player.pos.x >= player.cluster.clusterArray[0].length){
+      player.pos.x = 0
+      player.pos.y = 0
+      player.dir = 0
+    }
+
     player.cluster.clusterArray[player.pos.x][player.pos.y] -= 1;
     if (player.cluster.clusterArray[player.pos.x][player.pos.y] <= 0) {
       player.cluster.clusterArray[player.pos.x][player.pos.y] = 0;
