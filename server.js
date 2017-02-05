@@ -30,6 +30,7 @@ function handler (req, res) {
   });
 }
 
+var start = 100
 io.on('connection', function (socket) {
 
   socket.player = createPlayer();
@@ -157,7 +158,8 @@ setInterval(function() {
 function createPlayer(){
 
   var player = {pos:{x:0,y:0},dir:0, burn:0};
-  newCluster = createCompositeFromArray([[16,16],[16,16]], {x: 100, y:100}, [player]);
+  newCluster = createCompositeFromArray([[16,16],[16,16]], {x: start, y:start}, [player]);
+  start += 150
   player.cluster = newCluster;
   World.add(engine.world, newCluster); // Array?
 
@@ -186,8 +188,8 @@ function createCompositeFromArray(arr, pos, players){
     bodies = []
     iMax = arr.length
     jMax = arr[0].length
-    for(i = 0; i < iMax; i++){
-        for(j=0; j < jMax; j++){
+    for(var i = 0; i < iMax; i++){
+        for(var j=0; j < jMax; j++){
             if (arr[i][j] > 0) {
                 bodies.push(Bodies.rectangle((i+0.5) * boxWidth + pos.x, (j+0.5) * boxWidth + pos.y, boxWidth, boxWidth))
             }
@@ -242,9 +244,9 @@ function combineComposites(clusterA, Aorigin, clusterB, Borigin) {
     B.originoffsety=B.originy-C.originy;
     //Create empty final array filled with 0's
     var newClusterArray = [];
-    for(i=0;i<C.width;i++){
+    for(var i=0;i<C.width;i++){
         newClusterArray.push([]);
-        for(j=0;j<C.height;j++){
+        for(var j=0;j<C.height;j++){
             newClusterArray[i].push(0);
         }
     }
@@ -252,8 +254,8 @@ function combineComposites(clusterA, Aorigin, clusterB, Borigin) {
     console.log("Filling new array with cluster A blocks:");
     //Add A clusters to final array
     //console.log("***********************************************");
-    for(i=0;i<A.width;i++){
-        for(j=0;j<A.height;j++){
+    for(var i=0;i<A.width;i++){
+        for(var j=0;j<A.height;j++){
             if(A.clusterArray[i][j]){
                 newClusterArray[i+A.originoffsetx][j+A.originoffsety]=A.clusterArray[i][j];
             }
@@ -262,8 +264,8 @@ function combineComposites(clusterA, Aorigin, clusterB, Borigin) {
 
     console.log("Filling new array with cluster B blocks:");
     //Add B clusters to final array
-    for(i=0;i<B.width;i++){
-        for(j=0;j<B.height;j++){
+    for(var i=0;i<B.width;i++){
+        for(var j=0;j<B.height;j++){
             if(B.clusterArray[i][j]){
                 newClusterArray[i+B.originoffsetx][j+B.originoffsety]=B.clusterArray[i][j];
             }
@@ -289,7 +291,7 @@ function getRandomClusters(xBds,yBds,numRand){
 	var yUB=yBds[1];
 	var yRange=yUB-yLB;
 	var randList=[];
-	for(i=0;i<numRand;i++){
+	for(var i=0;i<numRand;i++){
 
 		var xpos=xLB+Math.floor(Math.random()*xRange);
 		var ypos=yLB+Math.floor(Math.random()*yRange);
@@ -323,7 +325,7 @@ function findNewPlayerPos(cluster, pos, dir, rot){
     table = ccw
   }
 
-  for(i = 0; i<=2; i++){
+  for(var i = 0; i<=2; i++){
     if (blockAt(cluster, addPos(table[dir][i], pos))) {
       newPos = addPos(table[dir][i], pos);
       newDir = (4 + dir + dirChanges[i] * rot ) % 4;
