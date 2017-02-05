@@ -122,7 +122,7 @@ io.on('connection', function (socket) {
           var testPos = addPos(player.pos, searchList[searchIndex])
           if (blockAt(player.cluster, testPos)){
             player.pos = testPos
-            player.dir = Math.floor(searchIndex/2)
+            player.dir = (Math.floor(searchIndex/2) + 1)%4
             break;
           }
         }
