@@ -109,7 +109,10 @@ io.on('connection', function (socket) {
       player.cluster.clusterArray[player.pos.x][player.pos.y] = 0;
       var oldCluster = player.cluster
       var newCluster = createCompositeFromArray(oldCluster.clusterArray, oldCluster.bounds.min, oldCluster.players)
-      player.cluster = newCluster
+      oldCluster.players.forEach(function(player){
+        player.cluster = newCluster
+      })
+      //player.cluster = newCluster
       World.remove(engine.world, [oldCluster]);
       World.add(engine.world, newCluster);
 
