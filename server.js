@@ -204,7 +204,7 @@ function createCompositeFromArray(arr, pos, players){
 function killPlayer(player){
   console.log("player killed")
   var socket = player.socket;
-  player = createPlayer();
+  var player = createPlayer();
   socket.player = player;
 
   return player
@@ -336,7 +336,6 @@ function findNewPlayerPos(cluster, pos, dir, rot){
 }
 
 function blockAt(cluster, loc){
-  console.log(loc)
   if ((loc.x < 0) || (loc.y < 0) || (loc.x >= cluster.clusterArray.length) || (loc.y >= cluster.clusterArray[0].length)) {
     return false;
   }
@@ -360,8 +359,8 @@ function collisionCallback(event){
     invM = 1/M;
     jointvelocity = {x: (obj1.velocity.x * obj1.mass + obj2.velocity.x * obj2.mass)/ M,
        y: (obj1.velocity.y * obj1.mass + obj2.velocity.y * obj2.mass)/ M};
-    i = Math.round((obj1.bounds.min.x - obj2.bounds.min.x)/ boxWidth)
-    j = Math.round((obj1.bounds.min.y - obj2.bounds.min.y)/ boxWidth)
+    var i = Math.round((obj1.bounds.min.x - obj2.bounds.min.x)/ boxWidth)
+    var j = Math.round((obj1.bounds.min.y - obj2.bounds.min.y)/ boxWidth)
     newX = Math.min(obj1.bounds.min.x,obj2.bounds.min.x)
     newY = Math.min(obj1.bounds.min.y,obj2.bounds.min.y)
     console.log(i)
@@ -377,30 +376,39 @@ function collisionCallback(event){
     ]
     newPlayerArray = []
     obj2.players.forEach(function(player){
+      console.log(i)
+      console.log(j)
+        console.log(player.pos)
        if(i < 0){ player.pos.x = player.pos.x - i;}
        if(j < 0){ player.pos.y = player.pos.y - j;}
+           console.log(player.pos)
       if(blockAt(newCluster, addPos(dirConversion[player.dir], player.pos))){
 
-        player = killPlayer(player);
+        //player = killPlayer(player);
 
-      }else{
-      newPlayerArray.push(player)
-      player.cluster = newCluster;
-    }
+      } else {
+        newPlayerArray.push(player)
+        player.cluster = newCluster;
+      }
 
 
     });
 
     obj1.players.forEach(function(player){
+        console.log(player.pos)
+        console.log(i)
+        console.log(j)
       if(i > 0){ player.pos.x = player.pos.x + i;}
       if(j > 0){ player.pos.y = player.pos.y + j;}
 
+          console.log(player.pos)
       if(blockAt(newCluster, addPos(dirConversion[player.dir], player.pos))){
-        player = killPlayer(player);
+        //player = killPlayer(player);
       }else{
       player.cluster = newCluster;
       newPlayerArray.push(player);
     }
+
     });
     newCluster.players = newPlayerArray;
     Body.setAngle(newCluster, 0);
