@@ -1,6 +1,5 @@
 <script src="/socket.io/socket.io.js"></script>
 
-
 <img id="box16" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box16.png"></img>
 <img id="box15" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box15.png"></img>
 <img id="box14" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/boxes/box14.png"></img>
@@ -29,13 +28,33 @@
 <img id="playerdownburn" style="display: none;" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Draw/Arts/PlayerSprites/playerdownPlaceholderBurn.png"></img>
 <style>
   * { padding: 0; margin: 0; }
-  canvas { background: #000000; display: block; margin: 0 auto; }
+  canvas {
+    background: #000000;
+    display: none;
+    margin: 0 auto;
+  }
+  #title {
+    display: block;
+    width: 1366;
+    height: 768;
+    margin: 0 auto;
+  }
 </style>
 
-<canvas id="myCanvas" width="1366 px" height="768 px" bac></canvas>
+<canvas id="myCanvas" width="1366 px" height="768 px">
+
+</canvas>
+<img id="title" src="https://raw.githubusercontent.com/ishmandoo/enceladus/Art/titlepan.gif"></img>
 
 <script>
   var canvas = document.getElementById("myCanvas");
+  var title = document.getElementById("title");
+
+  setTimeout(function() {
+    title.style.display = "none";
+    canvas.style.display = "block";
+  }, 1000);
+
   var ctx = canvas.getContext("2d");
   var socket = io.connect();
   socket.on('update', function (data) {
