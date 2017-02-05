@@ -32,7 +32,7 @@
   canvas { background: #000000; display: block; margin: 0 auto; }
 </style>
 
-<canvas id="myCanvas" width="300 px" height="300 px" bac></canvas>
+<canvas id="myCanvas" width="1366 px" height="768 px" bac></canvas>
 
 <script>
   var canvas = document.getElementById("myCanvas");
@@ -82,7 +82,7 @@ function drawCluster(boxes,pos){
   for(i=0 ; i<iMax ; i++){
     for(j=0 ; j<jMax ; j++){
       if(boxes[i][j] != 0){
-        ctx.drawImage(document.getElementById('box' + boxes[i][j]), pos.x + i*boxWidth, pos.y + j*boxWidth);
+        ctx.drawImage(document.getElementById('box' + boxes[i][j]), pos.x + i*boxWidth + canvas.width/2, pos.y + j*boxWidth + canvas.height/2);
       }
     }
   }
@@ -91,9 +91,9 @@ function drawCluster(boxes,pos){
 function drawPlayer(player){
 
   if(!player.burn){
-    ctx.drawImage(document.getElementById("player" + names[player.dir] + "1"), player.pos.x, player.pos.y)
+    ctx.drawImage(document.getElementById("player" + names[player.dir] + "1"), player.pos.x + canvas.width/2, player.pos.y + canvas.height/2 )
   } else{
-    ctx.drawImage(document.getElementById("player" + names[player.dir] + "burn"), player.pos.x , player.pos.y)
+    ctx.drawImage(document.getElementById("player" + names[player.dir] + "burn"), player.pos.x + canvas.width/2 , player.pos.y + canvas.height/2)
   }
 }
 

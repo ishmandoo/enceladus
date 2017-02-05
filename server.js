@@ -37,18 +37,27 @@ io.on('connection', function (socket) {
   console.log("a client connected");
 
   setInterval(function() {
-    bodies = engine.world.bodies
+    var bodies = engine.world.bodies;
     //console.log(io.sockets.connected)
+    var playerPos = getPlayerCoordinates(socket.player);
+
+    function transformToLocal(pos) {
+      //return {x: pos.x - (socket.player.pos.x) * boxWidth  + socket.player.cluster.position.x, y:pos.y-(socket.player.pos.y ) * boxWidth+ socket.player.cluster.position.y}
+      return {x: pos.x - socket.player.cluster.position.x, y:pos.y- socket.player.cluster.position.y}
+    }
+
     socket.emit('update',
     {
       clusters: bodies.map(function (body){
         return {
           boxes: body.clusterArray,
-          pos: body.position
+          pos: transformToLocal(body.position)
         }
       }),
-      players: Object.values(io.sockets.connected).map(function (socket){
-        return getPlayerCoordinates(socket.player);
+      players: Object.values(io.sockets.connected).map(function (playerSocket){
+        var ans = getPlayerCoordinates(playerSocket.player);
+        ans.pos = transformToLocal(ans.pos)
+        return ans;
       })
     })}, 20);
 
@@ -402,7 +411,7 @@ objB = createCompositeFromArray([[16,0],[0,8],[0,8]], {x: 400, y:100}, [])
 
 
 Body.setVelocity(objB, {
-    x: -5,
+    x: 0,
     y: 0
 });
 
