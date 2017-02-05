@@ -47,7 +47,8 @@ io.on('connection', function (socket) {
           pos: body.position
         }
       }),
-      players: Object.values(io.sockets.connected).map(function (socket){
+      players: Object.keys(io.sockets.connected).map(function (key){
+        var socket = io.sockets.connected[key]
         return getPlayerCoordinates(socket.player);
       })
     })}, 20);
@@ -107,11 +108,19 @@ io.on('connection', function (socket) {
     ]
 
     var player = socket.player
+    console.log(player.pos);
+    console.log(player.cluster.clusterArray);
     var oldDir = player.dir
     player.burn = true
     setTimeout(function() {
       player.burn = false
     }, 200)
+
+    if(player.pos.x >= player.cluster.clusterArray.length || player.pos.x >= player.cluster.clusterArray[0].length){
+      player.pos.x = 0
+      player.pos.y = 0
+      player.dir = 0
+    }
     player.cluster.clusterArray[player.pos.x][player.pos.y] -= 1;
     if (player.cluster.clusterArray[player.pos.x][player.pos.y] <= 0) {
       var oldCluster = player.cluster
@@ -321,6 +330,7 @@ function findNewPlayerPos(cluster, pos, dir, rot){
       return {dir: newDir, pos: newPos};
     }
   }
+  return {dir: dir, pos: pos};
 
 
 }
@@ -367,6 +377,8 @@ function collisionCallback(event){
     ]
     newPlayerArray = []
     obj2.players.forEach(function(player){
+      if(i < 0){ player.pos.x = player.pos.x - i;}
+      if(j < 0){ player.pos.y = player.pos.y - j;}
       if(blockAt(newCluster, addPos(dirConversion[player.dir], player.pos))){
         player = killPlayer(player);
 
@@ -379,8 +391,9 @@ function collisionCallback(event){
     });
 
     obj1.players.forEach(function(player){
-      player.pos.x = player.pos.x + i;
-      player.pos.y = player.pos.y + j;
+      if(i > 0){ player.pos.x = player.pos.x + i;}
+      if(j > 0){ player.pos.y = player.pos.y + j;}
+      
       if(blockAt(newCluster, addPos(dirConversion[player.dir], player.pos))){
         player = killPlayer(player);
       }else{
