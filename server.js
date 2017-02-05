@@ -152,9 +152,15 @@ function createPlayer(){
 
 function killPlayer(player){
   console.log("player killed")
-  var socket = player.socket;
-  var player = createPlayer();
-  socket.player = player;
+  //var socket = player.socket;
+  //var newPlayer = createPlayer();
+  var newCluster = createCompositeFromArray([[16,16],[16,16]], {x: start, y:start}, [player]);
+  start += 150
+  player.cluster = newCluster;
+  World.add(engine.world, newCluster);
+  player.pos.x = 0;
+  player.pos.y = 0;
+  player.dir = 0;
 
   return player
 
