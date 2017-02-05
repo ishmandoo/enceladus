@@ -1,0 +1,78 @@
+function combineClusters(clusterA,Aorigin,clusterB,Borigin){
+
+	/*
+
+	Aorigin and B origin are "absolute" indices. If you want them to be relative to each
+	other, then make Aorigin = [0,0] and Borigin with respect to that.
+
+	Corigin is "absolute" as well.  
+
+	*/
+
+	var A = new Object();
+	A.originx=Aorigin[0];
+	A.originy=Aorigin[1];
+	A.width=clusterA.length;
+	A.height=clusterA[0].length;
+
+	var B = new Object();
+	B.originx=Borigin[0];
+	B.originy=Borigin[1];
+	B.width=clusterB.length;
+	B.height=clusterB[0].length;
+
+
+	//The newly created cluster
+	var C = new Object();
+	C.originx=Math.min(A.originx,B.originx);
+	C.originy=Math.min(A.originy,B.originy);
+	C.width=Math.max(A.originx+A.width,B.originx+B.width)-C.originx;
+	C.height=Math.max(A.originy+A.height,B.originy+B.height)-C.originy;
+
+	console.log("New origin is at "+C.originx+", "+C.originy);
+
+	A.originoffsetx=A.originx-C.originx;
+	A.originoffsety=A.originy-C.originy;
+	B.originoffsetx=B.originx-C.originx;
+	B.originoffsety=B.originy-C.originy;
+
+
+
+	//Create empty final array filled with 0's
+	var newCluster = [];
+	for(i=0;i<C.width;i++){
+		newCluster.push([]);	
+		for(j=0;j<C.height;j++){
+			newCluster[i].push(0);
+		}
+	}
+
+	console.log("New array is "+C.width+" by "+C.height);
+
+	console.log("Filling new array with cluster A blocks:");
+	//Add A clusters to final array
+	//console.log("***********************************************");
+	for(i=0;i<A.width;i++){
+		for(j=0;j<A.height;j++){
+			if(clusterA[i][j]){
+				newCluster[i+A.originoffsetx][j+A.originoffsety]=1;
+			}
+		}
+	}
+
+	
+
+	console.log("Filling new array with cluster B blocks:");
+	//Add B clusters to final array
+	for(i=0;i<B.width;i++){
+		for(j=0;j<B.height;j++){
+			if(clusterB[i][j]){
+				newCluster[i+B.originoffsetx][j+B.originoffsety]=1;
+			}
+		}
+	}
+
+
+	return([newCluster,Corigin]);
+
+}
