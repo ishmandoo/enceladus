@@ -134,7 +134,7 @@ setInterval(function() {
 function createPlayer(){
 
   var player = {pos:{x:0,y:0},dir:0, burn:0};
-  newCluster = createCompositeFromArray([[16,16],[16,16]], {x: start, y:start}, [player]);
+  var newCluster = createCompositeFromArray([[16,16],[16,16]], {x: start, y:start}, [player]);
   start += 150
   player.cluster = newCluster;
   World.add(engine.world, newCluster); // Array?
@@ -173,8 +173,8 @@ function getPlayerCoordinates(player){
 
 function createCompositeFromArray(arr, pos, players){
     bodies = []
-    iMax = arr.length
-    jMax = arr[0].length
+    var iMax = arr.length
+    var jMax = arr[0].length
     for(var i = 0; i < iMax; i++){
         for(var j=0; j < jMax; j++){
             if (arr[i][j] > 0) {
@@ -281,22 +281,23 @@ function getRandomClusters(xBds,yBds,numRand){
 }
 
 function findNewPlayerPos(cluster, pos, dir, rot){
-  dirChanges = [-1, 0, 1]
+  var dirChanges = [-1, 0, 1]
 
-  cw = [
+  var cw = [
     [{x:1,y:-1}, {x:1,y:0}, {x:0,y:0}],
     [{x:1,y:1}, {x:0,y:1}, {x:0,y:0}],
     [{x:-1,y:1}, {x:-1,y:0}, {x:0,y:0}],
     [{x:-1,y:-1}, {x:0,y:-1}, {x:0,y:0}],
   ]
 
-  ccw = [
+  var ccw = [
     [{x:-1,y:-1}, {x:-1,y:0}, {x:0,y:0}],
     [{x:1,y:-1}, {x:0,y:-1}, {x:0,y:0}],
     [{x:1,y:1}, {x:1,y:0}, {x:0,y:0}],
     [{x:-1,y:1}, {x:0,y:1}, {x:0,y:0}],
   ]
 
+  var table = []
   if (rot == 1){
     table = cw
   } else {
@@ -332,17 +333,19 @@ function addPos(pos1, pos2){
 
 var events;
 function collisionCallback(event){
-    pair = event.source.broadphase.pairsList[0]
-    obj1 = pair[0];
-    obj2 = pair[1];
-    M = obj1.mass + obj2.mass;
-    invM = 1/M;
-    jointvelocity = {x: (obj1.velocity.x * obj1.mass + obj2.velocity.x * obj2.mass)/ M,
-       y: (obj1.velocity.y * obj1.mass + obj2.velocity.y * obj2.mass)/ M};
+    var pair = event.source.broadphase.pairsList[0]
+    var obj1 = pair[0];
+    var obj2 = pair[1];
+    var M = obj1.mass + obj2.mass;
+    var invM = 1/M;
+    var jointvelocity = {
+      x: (obj1.velocity.x * obj1.mass + obj2.velocity.x * obj2.mass)/ M,
+      y: (obj1.velocity.y * obj1.mass + obj2.velocity.y * obj2.mass)/ M
+    };
     var i = Math.round((obj1.bounds.min.x - obj2.bounds.min.x)/ boxWidth)
     var j = Math.round((obj1.bounds.min.y - obj2.bounds.min.y)/ boxWidth)
-    newX = Math.min(obj1.bounds.min.x,obj2.bounds.min.x)
-    newY = Math.min(obj1.bounds.min.y,obj2.bounds.min.y)
+    var newX = Math.min(obj1.bounds.min.x,obj2.bounds.min.x)
+    var newY = Math.min(obj1.bounds.min.y,obj2.bounds.min.y)
     console.log(i)
     console.log(j)
     newClusterArray = combineComposites(obj1, [i,j], obj2, [0,0])
@@ -354,15 +357,12 @@ function collisionCallback(event){
       {x:0,y:1},
       {x:-1,y:0}
     ]
-    newPlayerArray = []
+
+    var newPlayerArray = []
     obj2.players.forEach(function(player){
-      console.log(i)
-      console.log(j)
-        console.log(player.pos)
        if(i < 0){ player.pos.x = player.pos.x - i;}
        if(j < 0){ player.pos.y = player.pos.y - j;}
-           console.log(player.pos)
-      if(blockAt(newCluster, addPos(dirConversion[player.dir], player.pos))){
+       if(blockAt(newCluster, addPos(dirConversion[player.dir], player.pos))){
 
         player = killPlayer(player);
 
@@ -375,16 +375,11 @@ function collisionCallback(event){
     });
 
     obj1.players.forEach(function(player){
-        console.log(player.pos)
-        console.log(i)
-        console.log(j)
       if(i > 0){ player.pos.x = player.pos.x + i;}
       if(j > 0){ player.pos.y = player.pos.y + j;}
-
-          console.log(player.pos)
       if(blockAt(newCluster, addPos(dirConversion[player.dir], player.pos))){
         player = killPlayer(player);
-      }else{
+      } else {
       player.cluster = newCluster;
       newPlayerArray.push(player);
     }
