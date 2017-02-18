@@ -1,14 +1,32 @@
-var Cluster = require("cluster")
 
 class Player {
-	constructor(worldPos, socket) {
+	constructor(worldPos, socket, game) {
 		this.socket = socket;
-		this.worldPos = worldPos;
-		this.init();
+		this.game = game;
+		this.burn = false;
+		this.spawn(worldPos);
 	}
 
-	burn() {
-		this.cluster.applyForce(this.dir);
+	destroy(){
+
+	}
+
+	fire() {
+		var dirConversion = [
+	      {x:0,y:0.01},
+	      {x:-0.01,y:0},
+	      {x:0,y:-0.01},
+	      {x:0.01,y:0}
+	    ];
+		this.cluster.applyForce(dirConversion[this.dir]);
+		this.burn = true;
+		var player = this;
+
+		setTimeout(function() {
+      		player.burn = false;
+    	}, 200)
+
+    	//TODO: Code to check if block is depleted of fuel and move player accordingly.
 	}
 
 	move(rot) {
@@ -47,19 +65,25 @@ class Player {
 
 		// given the player's direction loop over blocks to check
 		// when you find a block, move to that block and set the new direction
+
+	function addPos(pos1, pos2){
+  		return {x:pos1.x+pos2.x,y:pos1.y+pos2.y}
+	}
+
 	  for(var i = 0; i<=2; i++){
-			var testPos = addPos(table[this.dir][i], this.clusterPos);
+			var testPos = addPos(table[this.dir][i], this.clusterIndex);
 	    if (this.cluster.blockAt(testPos)) {
-	      this.clusterPos = testPos;
+	      this.clusterIndex = testPos;
 				this.dir = (4 + this.dir + dirChanges[i] * rot ) % 4;
 				break;
 	    }
 	  }
 	}
 
-	init () {
-		this.clusterPos = {x: 0, y: 0};
-		this.cluster = new Cluster([16, 16],[16, 16]], this.worldPos);
+	spawn(pos) {
+		this.clusterIndex = {x: 0, y: 0};
+		this.cluster = this.game.createCluster(pos, [[16, 16],[16, 16]])
+		//this.cluster = new Cluster(this.worldPos, [16, 16],[16, 16]]);
 		this.cluster.addPlayer(this);
 		this.dir = 0;
 		this.burn = false;
@@ -67,7 +91,9 @@ class Player {
 
 	kill() {
 		this.cluster.removePlayer(this);
-		this.init();
+		var scale = 500;
+		var worldPos = {x: Math.random()*scale, y: Math.random()*scale}
+		this.spawn(worldPos);
 	}
 
 	changeCluster(newCluster) {
@@ -76,10 +102,12 @@ class Player {
 
 	serialize() {
 		return {
-			clusterPos: this.clusterPos,
-			pos: this.cluster.pos, //yes, really
-			dir: this.dir
+			clusterIndex: this.clusterIndex,
+			pos: this.cluster.getPosition(), 
+			dir: this.dir,
 			burn: this.burn
 		}
 	}
 }
+
+module.exports = Player;

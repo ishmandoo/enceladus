@@ -96,34 +96,32 @@ names = [
   'down',
   'left'
 ]
-function drawCluster(boxes, pos, me){
+function drawCluster(boxes,pos){
   iMax = boxes.length;
   jMax = boxes[0].length;
   for(i=0 ; i<iMax ; i++){
     for(j=0 ; j<jMax ; j++){
       if(boxes[i][j] != 0){
-        ctx.drawImage(document.getElementById('box' + boxes[i][j]), pos.x - me.pos.x + i*boxWidth + canvas.width/2, pos.y - me.pos.y + j*boxWidth + canvas.height/2);
+        ctx.drawImage(document.getElementById('box' + boxes[i][j]), pos.x + i*boxWidth + canvas.width/2, pos.y + j*boxWidth + canvas.height/2);
       }
     }
   }
 }
 
-function drawPlayer(player, me){
-
+function drawPlayer(player){
 
   if(!player.burn){
-    ctx.drawImage(document.getElementById("player" + names[player.dir] + "1"), player.pos.x + (player.clusterIndex.x + offsets[player.dir].x) * boxWidth - me.pos.x + canvas.width/2, player.pos.y + (player.clusterIndex.y + offsets[player.dir].y) * boxWidth - me.pos.y + canvas.height/2 )
+    ctx.drawImage(document.getElementById("player" + names[player.dir] + "1"), player.pos.x + canvas.width/2, player.pos.y + canvas.height/2 )
   } else{
-    ctx.drawImage(document.getElementById("player" + names[player.dir] + "burn"), player.pos.x + (player.clusterIndex.x + offsets[player.dir].x) * boxWidth - me.pos.x + canvas.width/2 , player.pos.y + (player.clusterIndex.y + offsets[player.dir].y) * boxWidth - me.pos.y + canvas.height/2)
+    ctx.drawImage(document.getElementById("player" + names[player.dir] + "burn"), player.pos.x + canvas.width/2 , player.pos.y + canvas.height/2)
   }
 }
 
-function drawBackground(me){
-      var origin = {};
+function drawBackground(origin){
       var width = 202;
       var height = 202;
-      origin.x  = -me.pos.x % width;
-      origin.y  = -me.pos.y % height;
+      origin.x  = origin.x % width;
+      origin.y  = origin.y % height;
 
       for(var i = -1 * width; i < canvas.width + width; i += width){
         for(var j = -1 * height; j < canvas.height + height; j += height){
@@ -135,21 +133,10 @@ function drawBackground(me){
 }
 
 function draw(data) {
-  /* This is the structure of players
-  {
-      clusterPos: this.clusterPos,
-      pos: this.cluster.pos, //yes, really
-      dir: this.dir
-      burn: this.burn
-    }
-    */
-  var clusters = data.clusters;
-  var players = data.players;
-  var me = data.you;
-  
-
+  clusters = data.clusters
+  players = data.players
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawBackground(me);
+  drawBackground(data.origin);
   /*
   clusterArray = [
     {boxes: [[16,0,0],[15,0,0],[14,13,12]], pos:{x:100, y:100}, players: [{pos:{x:0,y:0},dir:0, burn:0}]},
@@ -159,10 +146,10 @@ function draw(data) {
   ];
   */
   clusters.forEach(function (cluster){
-    drawCluster(cluster.map, cluster.pos, me);
+    drawCluster(cluster.boxes,cluster.pos);
   });
   players.forEach(function (player){
-    drawPlayer(player, me);
+    drawPlayer(player);
   });
 
 
