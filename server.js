@@ -59,7 +59,8 @@ io.on('connection', function (socket) {
         var ans = getPlayerCoordinates(playerSocket.player);
         ans.pos = transformToLocal(ans.pos)
         return ans;
-      })
+      }),
+      origin: transformToLocal({x:0,y:0})
     })}, 20);
 
   socket.on('move', function (rot) {
